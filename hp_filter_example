@@ -1,0 +1,35 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import pymc3 as pm
+dta = sm.datasets.macrodata.load_pandas().data
+index = pd.Index(sm.tsa.datetools.dates_from_range('1959Q1', '2009Q3'))
+dta.index = index
+del dta['year']
+del dta['quarter']
+
+hp_cycle, hp_trend = sm.tsa.filters.hpfilter(dta.realgdp)
+
+
+fig = plt.figure(figsize=(12,8))
+ax = fig.add_subplot(111)
+dta.realgdp.plot(ax=ax)
+hp_trend.plot(ax=ax)
+
+hp_cycle.plot(ax=ax);
+legend = ax.legend(loc = 'upper left');
+legend.prop.set_size(20);
+plt.show()
+
+y = dta.realgdp
+x = dta.drop(['realgdp'], axis = 1)
+data = dict(x=x, y=y)
+with pm.Model() as model:
+    pm.glm.GLM.from_formula('y ~ x', data)
+    trace = pm.sample(3500)
+plt.figure(figsize=(7, 7))
+pm.traceplot(trace[500:])
+plt.tight_layout();
+
+pm.summary(trace)
