@@ -21,13 +21,13 @@ hp_cycle.plot(ax=ax);
 legend = ax.legend(loc = 'upper left');
 legend.prop.set_size(20);
 plt.show()
+y = hp_cycle
 
-y = dta.realgdp
-x = dta.drop(['realgdp'], axis = 1)
+x = np.column_stack([dta.unemp,dta.cpi,dta.infl,dta.m1,dta.realint])
 data = dict(x=x, y=y)
 with pm.Model() as model:
     pm.glm.GLM.from_formula('y ~ x', data)
-    trace = pm.sample(3500)
+    trace = pm.sample(5000, tune = 1000)
 plt.figure(figsize=(7, 7))
 pm.traceplot(trace[500:])
 plt.tight_layout();
